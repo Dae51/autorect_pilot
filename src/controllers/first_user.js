@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-
+/* import {nullHandler} from './validator.js';
+ */
 function First() {
+    // Se declaran los datos del usuario
     const [nombre, setNombreNegocio] = useState('');
     const [correo, setCorreo] = useState('');
     const [clave, setClave] = useState('');
@@ -8,15 +10,23 @@ function First() {
     const [direccion, setDireccion] = useState('');
 
         function submitHandler(e) {
+            //validacion que evita que se recargue la pagina cuando se manda
             e.preventDefault();
-            const CLIENTEDATA = {
-                nombre: nombre,
-                correo: correo,
-                clave: clave,
-                telefono: telefono,
-                direccion: direccion
-              };
-            console.log(CLIENTEDATA);
+            //Funcion para validar todo los campos vacios 
+            if (nombre.trim() !== '' && correo.trim() !== '' && clave.trim() !== '' && telefono.trim() !== '' && direccion.trim() !== ''){
+                // Se gurdan los datos del cliente en un objeto anidado
+                const CLIENTEDATA = {
+                    nombre: nombre,
+                    correo: correo,
+                    clave: clave,
+                    telefono: telefono,
+                    direccion: direccion
+                  };
+                  console.log(CLIENTEDATA);
+            } else {
+                alert('Todos los campos son obligatorios');
+                return;
+            }
         }
     return (
         <div className="signup" id="contained-signup">
