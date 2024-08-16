@@ -1,35 +1,93 @@
 // Se importa el modulo que carga la conexion a firebase
 import FirebaseApp from './server/server_config.js';
 //Se importa el metodo de autenticacion de firebase
-import {getAuth, onAuthStateChanged} from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+// Se importa el el servicio para leer documentos de una coleccion en firebase
+import { getFirestore, getDocs, collection } from 'firebase/firestore';
 // Se importa el estado inicial de react
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+// Se importa el router de react-router-dom para navegar entre las paginas
+import { useNavigate, BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 // Se importa el modulo de bootstrap
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-// Se importan los componentes 
+// Se importan los componentes del primer uso y el login
 import First from './controllers/first_user.js';
 import Login from './controllers/login.js';
+import Main from './controllers/main.js';
+
+import './style/bootstrap.min.css';
+import firebaseApp from './server/server_config.js';
+
 
 // Creamos el objeto de autenticacion y le pasamos de parametro la conexion
 const auth = getAuth(FirebaseApp);
+// Creamos el objeto que almacena la base de datos para interactuar con la base de datos
+const firebase = getFirestore(firebaseApp);
 
+// Funcion para verificar que hay usuarios en la base de datos
+const checkUsers = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(firebase, 'administradores'));
+    if (querySnapshot.empty) {
+      return false; 
+    }
+    return true; 
+  } catch (error) {
+    console.error('Error checking users existence:', error);
+    return false; // Error en la consulta
+  }
+};
 
-function App() {
+// Funcion que gestiona el contenido mostrado en el index(Primer uso || Login)
+function LoginHandler() {
+  // Constante donde se guarda el usuario
   const [user, setuser] = useState(null);
-
-  onAuthStateChanged(auth, (firebaseUser) => {
-    if (firebaseUser) {
-      setuser(firebaseUser);
-    }else {
+  // Constante use navigate para navegar entre diferentes paginas
+  const Navigate = useNavigate();
+  // Funcion donde se valida la autenticacion del usuario y se guarda en una variable
+  useEffect(() => {
+    // Constante que gestiona la autenticacion del usuario y se guarda en una variable
+    const state = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setuser(firebaseUser);
+        Navigate('/dashboard');
+      } else {
         setuser(null);
+        Navigate('/index');
       }
     }
-  )
-  return (
-   <div>
-     {user? <Login/> : <First/>}
-   </div>
+    );
+
+    return () => state();
+
+  }, [Navigate]
   );
+  // Contenido JSX que se muestra en la aplicacion, se crea la ruta del dashboard y la del index
+  return (
+    <Routes>
+      <Route path="/index" element={
+        <> { checkUsers ? <Login /> : <First />}</>
+      } />
+      <Route path="/dashboard" element={
+        <div>
+          <Main />
+        </div>
+      } />
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Routes>
+  );
+}
+
+// Funcion donde se guarda el codigo central de la app web
+function App() {
+
+  // Se carga el contenido jsx del Login si hay usuarios en la base de datos o se carga el primer usuario si no existen usuarios
+  return (
+    <Router>
+      <LoginHandler />
+    </Router>
+  );
+
 }
 
 export default App;
