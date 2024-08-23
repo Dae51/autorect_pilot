@@ -7,15 +7,18 @@ import { getFirestore, getDocs, collection } from 'firebase/firestore';
 // Se importa el estado inicial de react
 import { useState, useEffect } from 'react';
 // Se importa el router de react-router-dom para navegar entre las paginas
-import { useNavigate, BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useNavigate, BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 // Se importa el modulo de bootstrap
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+
+import { Toaster } from 'react-hot-toast';
+
 // Se importan los componentes del primer uso y el login
 import First from './controllers/first_user.js';
 import Login from './controllers/login.js';
 import Main from './controllers/main.js';
 
-import './style/bootstrap.min.css';
+
 import firebaseApp from './server/server_config.js';
 
 
@@ -29,9 +32,9 @@ const checkUsers = async () => {
   try {
     const querySnapshot = await getDocs(collection(firebase, 'administradores'));
     if (querySnapshot.empty) {
-      return false; 
+      return false;
     }
-    return true; 
+    return true;
   } catch (error) {
     console.error('Error checking users existence:', error);
     return false; // Error en la consulta
@@ -44,6 +47,9 @@ function LoginHandler() {
   const [user, setuser] = useState(null);
   // Constante use navigate para navegar entre diferentes paginas
   const Navigate = useNavigate();
+
+  const location = useLocation();
+
   // Funcion donde se valida la autenticacion del usuario y se guarda en una variable
   useEffect(() => {
     // Constante que gestiona la autenticacion del usuario y se guarda en una variable
@@ -57,16 +63,14 @@ function LoginHandler() {
       }
     }
     );
-
     return () => state();
-
   }, [Navigate]
   );
   // Contenido JSX que se muestra en la aplicacion, se crea la ruta del dashboard y la del index
   return (
     <Routes>
       <Route path="/index" element={
-        <> { checkUsers ? <Login /> : <First />}</>
+        <> {checkUsers ? <Login/> : <First />}</>
       } />
       <Route path="/dashboard" element={
         <div>
@@ -84,6 +88,10 @@ function App() {
   // Se carga el contenido jsx del Login si hay usuarios en la base de datos o se carga el primer usuario si no existen usuarios
   return (
     <Router>
+      <Toaster
+        position='top-right'
+        reverseOrder={false}
+      />
       <LoginHandler />
     </Router>
   );

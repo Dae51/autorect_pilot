@@ -15,11 +15,11 @@ body .imagen {
     position: absolute;
 }
 
-body {
+ body {
     background-image: url(../../images/car.jpg);
     background-size: cover;
     overflow: hidden;
-}
+} 
 
 .contenedor .formlogin {
     width: 45%;
@@ -62,14 +62,14 @@ body {
     margin-left: 140px;
 }
 
-.input-data .underline {
+.input_data .underline {
     position: absolute;
     width: 100%;
     bottom: 0;
     height: 2px;
 }
 
-.input-data .underline:before {
+.input_data .underline:before {
     position: absolute;
     content: "";
     height: 100%;
@@ -79,12 +79,12 @@ body {
     transition: transform 0.3s ease;
 }
 
-.input-data input:focus~.underline:before,
-.input-data input:valid~.underline:before {
+.input_data input:focus~.underline:before,
+.input_data input:valid~.underline:before {
     transform: scaleX(1);
 }
 
-.input-data {
+.input_data {
     height: 45px;
     width: 350px;
     position: relative;
@@ -94,7 +94,7 @@ body {
     margin-top: 2rem;
 }
 
-.input-data input {
+.input_data input {
     height: 100%;
     padding-left: 10px;
     padding-top: 15px;
@@ -106,15 +106,15 @@ body {
     font-size: 14px;
 }
 
-.input-data input:focus~label,
-.input-data input:valid~label {
+.input_data input:focus~label,
+.input_data input:valid~label {
     font-size: 12px;
     bottom: 17px;
     margin-bottom: 10px;
     color: #A3A3A3;
 }
 
-.input-data label {
+.input_data label {
     position: absolute;
     bottom: 10px;
     margin-left: 10px;

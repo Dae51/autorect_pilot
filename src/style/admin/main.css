@@ -32,7 +32,7 @@
   }
 
   /*Style to navbar*/
-  .nav-item a.active {
+  .navItem a.active {
     background-color: #fff;
     color: #000;
     border-radius: 10px;
