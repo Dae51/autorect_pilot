@@ -21,7 +21,8 @@ export const buttonStyle = {
     height: '60px',
     borderRadius: '20px',
     marginTop: '1rem',
-    marginLeft: '5rem'
+    marginLeft: '5rem',
+    border: "none"
 };
 export const title = {
     color: 'white',

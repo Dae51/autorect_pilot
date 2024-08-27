@@ -11,14 +11,16 @@ import { useNavigate, BrowserRouter as Router, Route, Routes, Navigate, useLocat
 // Se importa el modulo de bootstrap
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
+// Se importa el modulo Toaster de la libreria react-hot-toast donde se cargan las notificaciones
 import { Toaster } from 'react-hot-toast';
 
-// Se importan los componentes del primer uso y el login
+// Se importan el componente del primer uso
 import First from './controllers/first_user.js';
+// Se importa el componente del login
 import Login from './controllers/login.js';
-import Main from './controllers/main.js';
-
-
+// Se importa el componente del contenido que se muestra en la aplicacion
+import Account from "./controllers/account.js";
+// Se importa la conexion con firebase
 import firebaseApp from './server/server_config.js';
 
 
@@ -74,7 +76,7 @@ function LoginHandler() {
       } />
       <Route path="/dashboard" element={
         <div>
-          <Main />
+          <Account />
         </div>
       } />
       <Route path="*" element={<Navigate to="/login" />} />
