@@ -1,6 +1,7 @@
 // Se importa el estado incial de react
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {useAuth} from "./authContext.js"
 
 // Se importa el modulo que carga la conexion a firebase
 import firebaseApp from "../server/server_config";
@@ -22,7 +23,7 @@ export const buttonStyle = {
     borderRadius: '20px',
     marginTop: '1rem',
     marginLeft: '5rem',
-    border: "none"
+    border: "transparent"
 };
 export const title = {
     color: 'white',
@@ -48,21 +49,23 @@ function Login() {
     // Constante navigate para navegar entre paginas
     const navigate = useNavigate();
 
+    const {login} = useAuth();
+
     // Se declaran los estados para el email y la contraseña del usuario
     const [mail, setmail] = useState('');
     const [password, setpassword] = useState('');
 
     // Se crea el metodo para el evento de envio del formulario  del login
-    function submitHandler(e) {
+    const submitHandler = async (e) => {
         e.preventDefault();
         // Metodo para validar campos vacios del login
         if (mail.trim() !== '' && password.trim() !== '') {
             // Se ejecuta el meto de autenticacion en correo y contraseña del usuario de firebase
-            signInWithEmailAndPassword(auth, mail, password).then(() => {
-                navigate('./views/dashboard');
-                //Metodo que gestiona los errores del login
+            try {
+                await login(mail, password);
                 toast.success('Iniciaste sesión correctamente');
-            }).catch((error) => {
+                navigate('/dashboard');
+            } catch(error) {
                 if (error.code === 'auth/wrong-password') {
                     toast.error('Contraseña incorrecta.');
                 } else if (error.code === 'auth/user-not-found') {
@@ -76,7 +79,7 @@ function Login() {
                 } else if (error.code === 'auth/app-deleted') {
                     toast.error('La aplicación se ha eliminado. Por favor contacte con su proveedor');
                 }
-            });
+            };
         } else {
             toast.error('Debe llenar todos los campos vacios');
             return;

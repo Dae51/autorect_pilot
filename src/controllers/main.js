@@ -13,10 +13,6 @@ import { Button } from "react-bootstrap";
 // Se importa la iconografia a utilizar de la libreria react-icons
 import { FaEllipsisVertical, FaUserLarge, FaStar, FaStarHalf } from "react-icons/fa6";
 
-// Se importan los estilos css
-import '../style/admin/admin.css';
-import '../style/admin/menu.css';
-
 // Se crea el objeto con el cual se interactua con firebase authetication
 const auth = getAuth(firebaseApp);
 

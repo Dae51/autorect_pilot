@@ -34,13 +34,13 @@ function First() {
     const [direccion, setDireccion] = useState('');
 
     //Funcion que maneja la insercion del primer usuario 'admin'
-    async function NewUser(ADMINDATA) {
+    async function NewUser(adminData, adminCredentials) {
         // Crea un nuevo usuario con la dirección de correo y la contraseña
-        createUserWithEmailAndPassword(auth, ADMINDATA['correo'], ADMINDATA['clave']).then((FirebaseUser) => {
+        createUserWithEmailAndPassword(auth, adminCredentials['correo'], adminCredentials['clave']).then((FirebaseUser) => {
             // Se guarda el uid del usuario de firebase en una constante
             const user = FirebaseUser.user.uid;
             // Se agrega un nuevo documento en la colección administradores con los datos del usuario
-            return addDoc(collection(firestore, 'administradores'), { ADMINDATA, usuario: user }).then((docRef) => {
+            return addDoc(collection(firestore, 'administradores'), { adminData, adminCredentials, uid: user }).then((docRef) => {
                 toast.success('Usuario creado exitosamente');
             });
             //Metodo para manejar los errores de firebase auth
@@ -88,16 +88,19 @@ function First() {
             pattern: /^[a-zA-Z0-9.,-]*$/,
             forbiddenChars: "!#$%@^&*()"
         }) !== null) {
-            // Se guardan los datos del usuario en un objeto anidado
-            const ADMINDATA = {
-                nombre: nombre,
+            // Se guardan las credenciales en otro objeto anidado
+            let adminCredentials = {
                 correo: correo,
-                clave: clave,
+                clave: clave
+            }
+            // Se guardan los datos del usuario en un objeto anidado
+            let adminData = {
+                nombre: nombre,
                 telefono: telefono,
                 direccion: direccion
             };
             // Se crea el nuevo usuario con los datos del cliente
-            NewUser(ADMINDATA);
+            NewUser(adminData, adminCredentials);
         } else {
             toast.error('Los datos del usuario no son validos')
         }

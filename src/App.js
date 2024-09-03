@@ -8,6 +8,9 @@ import { getFirestore, getDocs, collection } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 // Se importa el router de react-router-dom para navegar entre las paginas
 import { useNavigate, BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+
+import { ProtectedRoute, AuthProvider } from './controllers/authContext.js';
+
 // Se importa el modulo de bootstrap
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
@@ -20,14 +23,11 @@ import First from './controllers/first_user.js';
 import Login from './controllers/login.js';
 // Se importa el componente del contenido que se muestra en la aplicacion
 import Account from "./controllers/account.js";
-// Se importa la conexion con firebase
-import firebaseApp from './server/server_config.js';
-
 
 // Creamos el objeto de autenticacion y le pasamos de parametro la conexion
 const auth = getAuth(FirebaseApp);
 // Creamos el objeto que almacena la base de datos para interactuar con la base de datos
-const firebase = getFirestore(firebaseApp);
+const firebase = getFirestore(FirebaseApp);
 
 // Funcion para verificar que hay usuarios en la base de datos
 const checkUsers = async () => {
@@ -52,7 +52,7 @@ function LoginHandler() {
 
   const location = useLocation();
 
-  // Funcion donde se valida la autenticacion del usuario y se guarda en una variable
+/*   // Funcion donde se valida la autenticacion del usuario y se guarda en una variable
   useEffect(() => {
     // Constante que gestiona la autenticacion del usuario y se guarda en una variable
     const state = onAuthStateChanged(auth, (firebaseUser) => {
@@ -67,17 +67,18 @@ function LoginHandler() {
     );
     return () => state();
   }, [Navigate]
-  );
+  ); */
   // Contenido JSX que se muestra en la aplicacion, se crea la ruta del dashboard y la del index
   return (
     <Routes>
       <Route path="/index" element={
-        <> {checkUsers ? <Login/> : <First />}</>
+        <> {checkUsers ? <Login /> : <First />}</>
       } />
       <Route path="/dashboard" element={
-        <div>
+        <ProtectedRoute>
           <Account />
-        </div>
+        </ProtectedRoute>
+
       } />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
@@ -90,11 +91,13 @@ function App() {
   // Se carga el contenido jsx del Login si hay usuarios en la base de datos o se carga el primer usuario si no existen usuarios
   return (
     <Router>
-      <Toaster
-        position='top-right'
-        reverseOrder={false}
-      />
-      <LoginHandler />
+      <AuthProvider>
+        <Toaster
+          position='top-right'
+          reverseOrder={false}
+        />
+        <LoginHandler />
+      </AuthProvider>
     </Router>
   );
 

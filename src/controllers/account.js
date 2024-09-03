@@ -3,10 +3,9 @@ import { useState } from "react";
 // Se importa firebase
 import firebaseApp from "../server/server_config";
 // Se importan los modulos de autenticacion necesarios de firebase autentication
-import { signOut, getAuth } from "firebase/auth";
-
+import {useAuth} from "./authContext.js"
 //Se importan la iconografia a utilizar desde react-icons
-import { FaHouseChimney, FaCircleUser, FaUserGroup, FaBookmark, FaClipboardUser, FaCarBattery, FaCartFlatbed, FaArrowRightToBracket, FaAngleRight, FaAngleLeft } from "react-icons/fa6";
+import { FaHouseChimney, FaCircleUser, FaUserGroup, FaBookmark, FaClipboardUser, FaCarBattery, FaCartFlatbed, FaArrowRightFromBracket, FaAngleRight, FaAngleLeft } from "react-icons/fa6";
 //Se importan los objetos a utilizar desde la libreria de bootstrap
 import { Button, Dropdown } from "react-bootstrap"
 //Se importan las notificaciones toast desde la libreria react-hot-toast
@@ -18,14 +17,17 @@ import "../style/admin/admin.css";
 
 // Se importa el contenido mostrado por defecto en el dashboard
 import Dashboard from "./main.js";
+
+import Admin from "./admin.js";
+
 //Se importa el logo de la aplicacion 
 import logo from "../images/logo_login.png";
 
-//Se crea la constante encargada de interactuar con la base de datos
-const auth = getAuth(firebaseApp);
 
 // Funcion que maneja todo el contenido principal
 function Account() {
+    const {logout} = useAuth();
+
 
     //Se crea la variable de estado cuando el usuario desplaza el mouse por encima de un objeto
     const [Hovered, setHovered] = useState(null);
@@ -77,7 +79,7 @@ function Account() {
             case 'dashboard': 
                 return <Dashboard />;
             case 'administradores':
-                return <h1>Administradores</h1>;
+                return <Admin />;
             case 'usuarios':
                 return <h1>Usuarios</h1>;
             default:
@@ -94,7 +96,7 @@ function Account() {
     // Se carga el contenido del dashboard
     return (
         <div style={{ backgroundColor: "white" }}>
-            <div style={{ display: "inline-flex" }}>
+            <div style={{display: "block"}}>
     {/* Se carga el menu del sistema (sidebar) */}
                 <aside>
                     <div style={nav}>
@@ -164,9 +166,9 @@ function Account() {
                                 </Button>
                             </div>
                             <div className="bottomnav">
-                                <Button title="Cerrar sesión" type="button" className="btn" data-bs-toggle="tooltip" style={{ backgroundColor: "#822727", color: "white", border: "none" }} onClick={() => signOut(auth) && toast.success('Sesion cerrada exitosamente')} data-bs-placement="right" data-bs-title="Log-Out">
+                                <Button title="Cerrar sesión" type="button" className="btn" data-bs-toggle="tooltip" style={{ backgroundColor: "#822727", color: "white", border: "none" }} onClick={() => logout() && toast.success('Sesion cerrada exitosamente')} data-bs-placement="right" data-bs-title="Log-Out">
                                     <div style={{ marginTop: "7px", marginBottom: "7px" }}>
-                                        <FaArrowRightToBracket size={"1.5rem"} />
+                                        <FaArrowRightFromBracket size={"1.5rem"} />
                                     </div>
                                 </Button>
                             </div>
@@ -174,7 +176,7 @@ function Account() {
                     </div>
                 </aside>
     {/*  Se carga el contenido de la pagina dependiendo de la funcion handleContentChange  */}               
-                 <main style={{marginLeft: "5vh", width: "auto"}}>
+                 <main style={{width: "auto", height: "100vh", marginLeft: "9%", overflowY: "scroll", overflowX:"hidden"}}>
                     {handleContentChange()}
                 </main>
             </div>
