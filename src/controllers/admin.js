@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, setDoc, addDoc, Firestore } from "firebase/firestore";
+import { getFirestore, collection, getDocs, setDoc, addDoc, Firestore, getDoc, doc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, } from "firebase/storage";
 import firebaseApp from '../server/server_config';
 
 import { Button, Dropdown, Modal, Table } from "react-bootstrap"
@@ -43,6 +43,7 @@ function Admin() {
     const [direccion, setDireccion] = useState();
     const [Dui, setDui] = useState();
     const [birthDate, setBirthDate] = useState();
+    const [docId, setDocId] = useState();
     /*     const [imageURL, setImageURL] = useState();
      */
     useEffect(() => {
@@ -190,6 +191,44 @@ function Admin() {
         };
     };
 
+    function handleUpdate (e){
+        e.preventDefault();
+        toast.success('chi');
+    }
+
+    function LoadUpdate(id) {
+        // Obtener la referencia al documento en la colección "administradores" usando el id
+        const docRef = doc(db, "administradores", id);
+    
+        // Obtener los datos del documento
+        getDoc(docRef).then((docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // Asignar valores a los campos en el modal
+                setUsernamme(data.adminData?.alias || "");
+                setNombre(data.adminData?.nombre || "");
+                setApellido(data.adminData?.apellido || "");
+                setPassword(data.adminCredentials?.clave || "");
+                setEmail(data.adminCredentials?.correo || "");
+                setDui(data.adminData?.dui || "");
+                setTelefono(data.adminData?.telefono || "");
+                setBirthDate(data.adminData?.birthDate || "");
+                setDireccion(data.adminData?.direccion || "");
+                setImageSrc(data.adminData?.profileImage || ""); // Si tienes una imagen de perfil almacenada
+                setDocId(docSnap.id || "");
+                // Mostrar el modal para actualizar el documento
+                handleShow('update');
+            } else {
+                console.log("¡No existe tal documento!");
+            }
+        }).catch((error) => {
+            console.error("Error al obtener el documento:", error);
+        });
+    }
+    
+
+
     const handleModal = () => {
         switch (modalState) {
             case 'insert':
@@ -270,15 +309,92 @@ function Admin() {
                         </div>
                     </div>
                 </div>;
-            case 'update':
 
-                return;
+
+            case 'update':
+                return <div style={{ display: "flex" }} >
+                    <div class="section1">
+                        <input type="number" name="id" id="id" ></input>
+                        <div class="row">
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="text" id="alias" name="alias" value={username} onChange={(e) => setUsernamme(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>Nombre de usuario</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="text" id="nombre" name="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>Nombre</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="text" id="apellido" name="apellido" value={apellido} onChange={(e) => setApellido(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>Apellido</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="password" id="clave" name="clave" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>Contraseña</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="mail" id="correof" name="correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>Correo</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="text" id="dui" name="dui" value={Dui} onChange={(e) => setDui(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>DUI</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="text" id="telefono" name="telefono" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
+                                    <div class="underline"></div>
+                                    <label>Numero de telefono</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-data">
+                                    <input type="date" name="fecha_nacimiento" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} id="fecha" min="2006-01=01" />
+                                    <div class="underline"></div>
+                                    <label>Fecha de nacimiento</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section2" style={{ marginRight: "30px" }}>
+                        <img src={imageSrc} className="imagen"></img>
+                        <div class="btns">
+                            <input type="file" name="imageUser" id="file" accept="image/*" onChange={handleImageChange}></input>
+                        </div>
+                        <div class="row" style={{ marginTop: "50px" }}>
+                            <div class="col">
+                                <div class="input-group">
+                                    <label>Direccion</label>
+                                    <textarea style={{ maxHeight: "23vh", marginLeft: "10px" }} value={direccion} class="form-control" aria-label="With textarea" id="direccion" name="direccion" onChange={(e) => setDireccion(e.target.value)} required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>;
             case 'show':
 
-                return
+                return;
             default:
 
-                return
+                return;
         }
     }
 
@@ -304,9 +420,9 @@ function Admin() {
                     </Button>
                 </Modal.Header>
                 <Modal.Body style={{ height: "auto" }}>
-                    <form id='adminInfo'onSubmit={handleInsert}>
+                    <form id='adminInfo' onSubmit={docId ? handleUpdate : handleInsert}>
                         {handleModal()}
-                        <Modal.Footer style={{marginTop:"1.5rem"}}>
+                        <Modal.Footer style={{ marginTop: "1.5rem" }}>
                             <Button type='submit' variant="secondary">
                                 Save Changes
                             </Button>
@@ -414,7 +530,7 @@ function Admin() {
                                     </td>
                                     <td>{item.uid}</td>
                                     <td style={{ display: "flex", justifyContent: "space-evenly" }}>
-                                        <Button variant='outline-warning' title='Editar usuario'><FaFilePen size={"1.3rem"} onClick={() => handleShow('update')} /></Button>
+                                        <Button variant='outline-warning' title='Editar usuario'><FaFilePen size={"1.3rem"} onClick={() => LoadUpdate(item.id)} /></Button>
                                         <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} /></Button>
                                         <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => handleShow('show')} /></Button>
                                     </td>
