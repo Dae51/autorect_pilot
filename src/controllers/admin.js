@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, setDoc, addDoc, Firestore, getDoc, doc } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL, } from "firebase/storage";
+import { getFirestore, collection, getDocs, updateDoc, addDoc, deleteDoc, getDoc, doc } from "firebase/firestore";
+import { getAuth, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import firebaseApp from '../server/server_config';
 
 import { Button, Dropdown, Modal, Table } from "react-bootstrap"
@@ -44,6 +44,7 @@ function Admin() {
     const [Dui, setDui] = useState();
     const [birthDate, setBirthDate] = useState();
     const [docId, setDocId] = useState();
+    const [Uid, setUid] = useState();
     /*     const [imageURL, setImageURL] = useState();
      */
     useEffect(() => {
@@ -191,20 +192,109 @@ function Admin() {
         };
     };
 
-    function handleUpdate (e){
+    // Funcion que maneja la actualización de datos
+    const handleUpdate = async (e) => {
         e.preventDefault();
-        toast.success('chi');
+        if (validateString(username, {
+            required: true,
+            minLength: 5,
+            maxLength: 15,
+            pattern: /^[a-zA-Z0-9]*$/,
+            forbiddenChars: "!@#$%^&*()"
+        }) && validateString(nombre, {
+            required: true,
+            minLength: 3,
+            maxLength: 10,
+            pattern: /^[a-zA-Z0-9]*$/,
+            forbiddenChars: "!@#$%^&*()"
+        }) && validateString(apellido, {
+            required: true,
+            minLength: 3,
+            maxLength: 10,
+            pattern: /^[a-zA-Z0-9]*$/,
+            forbiddenChars: "!@#$%^&*()"
+        }) && validateString(telefono, {
+            required: true,
+            minLength: 7,
+            maxLength: 15,
+            pattern: /^\d{4}-[0-9]{4}$/,
+            forbiddenChars: "!#$%^&*()"
+        }) && validateString(direccion, {
+            required: true,
+            minLength: 10,
+            maxLength: 150,
+            pattern: null,
+            forbiddenChars: "!#$%^&*()"
+        }) && validateString(Dui, {
+            required: true,
+            minLength: 10,
+            maxLength: 10,
+            pattern: /^\d{8}-\d$/,
+            forbiddenChars: "!#$%^&*()"
+        }) && validateString(birthDate, {
+            required: true,
+            minLength: 10,
+            maxLength: 10,
+            pattern: null,
+            forbiddenChars: null
+        })) {
+            const image = document.getElementById('file');
+            const file = image.files[0];
+
+
+            if (file) {
+
+                try {
+                    // Subir imagen a Firebase Storage
+                    const imageStore = ref(storage, `profilePictures/${Uid}`); // Uid del usuario no autenticado
+                    await uploadBytes(imageStore, file); // Subir la imagen
+
+                    // Obtener la URL de descarga de la imagen subida
+                    const downloadURL = await getDownloadURL(imageStore);
+
+                    // Actualizar el estado con la URL obtenida
+                    setImageSrc(downloadURL);
+                    toast.success('Imagen actualizada con éxito.');
+                } catch (error) {
+                    toast.error('Ha ocurrido un error al subir la imagen');
+                    return;
+                }
+            }
+
+            // Actualizar los datos del documento del usuario en Firestore
+            try {
+                const userDocRef = doc(db, "administradores", docId);
+                await updateDoc(userDocRef, {
+                    adminData: {
+                        alias: username,
+                        nombre: nombre,
+                        apellido: apellido,
+                        telefono: telefono,
+                        direccion: direccion,
+                        dui: Dui,
+                        birthDate: birthDate,
+                        profileImage: imageSrc
+                    },
+                });
+                toast.success('Usuario actualizado con éxito.');
+                setShowModal(false);
+            } catch (error) {
+                toast.error('Error al actualizar el usuario.');
+            }
+        }
+        else {
+            toast.error('Ha ocurrido un error al actualizar el usuario.');
+        }
     }
 
     function LoadUpdate(id) {
         // Obtener la referencia al documento en la colección "administradores" usando el id
         const docRef = doc(db, "administradores", id);
-    
         // Obtener los datos del documento
         getDoc(docRef).then((docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                
+
                 // Asignar valores a los campos en el modal
                 setUsernamme(data.adminData?.alias || "");
                 setNombre(data.adminData?.nombre || "");
@@ -217,6 +307,7 @@ function Admin() {
                 setDireccion(data.adminData?.direccion || "");
                 setImageSrc(data.adminData?.profileImage || ""); // Si tienes una imagen de perfil almacenada
                 setDocId(docSnap.id || "");
+                setUid(data.uid || "");
                 // Mostrar el modal para actualizar el documento
                 handleShow('update');
             } else {
@@ -226,84 +317,150 @@ function Admin() {
             console.error("Error al obtener el documento:", error);
         });
     }
-    
 
+    function LoadData(id) {
+        // Obtener la referencia al documento en la colección "administradores" usando el id
+        const docRef = doc(db, "administradores", id);
+
+        // Obtener los datos del documento
+        getDoc(docRef).then((docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // Asignar valores a los campos en el modal
+                setUsernamme(data.adminData?.alias || "");
+                setNombre(data.adminData?.nombre || "");
+                setApellido(data.adminData?.apellido || "");
+                setPassword(data.adminCredentials?.clave || "");
+                setEmail(data.adminCredentials?.correo || "");
+                setDui(data.adminData?.dui || "");
+                setTelefono(data.adminData?.telefono || "");
+                setBirthDate(data.adminData?.birthDate || "");
+                setDireccion(data.adminData?.direccion || "");
+                setImageSrc(data.adminData?.profileImage || ""); // Si tienes una imagen de perfil almacenada
+                setDocId(docSnap.id || "");
+                setUid(data.uid || "");
+                // Mostrar el modal para actualizar el documento
+                handleShow('show');
+
+            } else {
+                console.log("¡No existe tal documento!");
+            }
+        }).catch((error) => {
+            console.error("Error al obtener el documento:", error);
+        });
+    }
+
+    async function handleDelete(id) {
+        try {
+            // Obtener la referencia al documento en la colección "administradores"
+            const docRef = doc(db, "administradores", id);
+
+            // Obtener los datos del documento
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const userUid = data.uid || "";
+                const imagePath = data.adminData?.profileImage || "";
+
+                // Eliminar el usuario de Firebase Authentication
+
+                // Eliminar la imagen de Firebase Storage
+                if (imagePath) {
+                    const imageRef = ref(storage, imagePath);
+                    await deleteObject(imageRef);
+                }
+                else {
+                    toast.error('no se ha podido eliminar la imagen')
+                }
+
+                // Eliminar el documento en Firestore
+                await deleteDoc(docRef);
+                toast.success('Usuario eliminado con éxito.');
+            } else {
+                toast.error('El usuario que se esta tratando de eliminar no existe');
+            }
+        } catch (error) {
+            toast.error("Ha ocurrido un error al eliminar el usuario");
+            console.log(error);
+        }
+    }
 
     const handleModal = () => {
         switch (modalState) {
             case 'insert':
                 return <div style={{ display: "flex" }} >
-                    <div class="section1">
-                        <input type="number" name="id" id="id"></input>
-                        <div class="row">
-                            <div class="col">
-                                <div class="input-data">
+                    <div className="section1">
+                        <div className="row">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="alias" name="alias" onChange={(e) => setUsernamme(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Nombre de usuario</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="nombre" name="nombre" onChange={(e) => setNombre(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Nombre</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="apellido" name="apellido" onChange={(e) => setApellido(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Apellido</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="password" id="clave" name="clave" onChange={(e) => setPassword(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Contraseña</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="mail" id="correof" name="correo" onChange={(e) => setEmail(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Correo</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="dui" name="dui" onChange={(e) => setDui(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>DUI</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="telefono" name="telefono" onChange={(e) => setTelefono(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Numero de telefono</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="date" name="fecha_nacimiento" onChange={(e) => setBirthDate(e.target.value)} id="fecha" min="2006-01=01" />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Fecha de nacimiento</label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="section2" style={{ marginRight: "30px" }}>
+                    <div className="section2" style={{ marginRight: "30px" }}>
                         <img src={(document.getElementById('file') === null) ? null : imageSrc} className="imagen"></img>
-                        <div class="btns">
+                        <div className="btns">
                             <input type="file" name="imageUser" id="file" accept="image/*" onChange={handleImageChange}></input>
                         </div>
-                        <div class="row" style={{ marginTop: "50px" }}>
-                            <div class="col">
-                                <div class="input-group">
+                        <div className="row" style={{ marginTop: "50px" }}>
+                            <div className="col">
+                                <div className="input-group">
                                     <label>Direccion</label>
-                                    <textarea style={{ maxHeight: "23vh", marginLeft: "10px" }} class="form-control" aria-label="With textarea" id="direccion" name="direccion" onChange={(e) => setDireccion(e.target.value)} required></textarea>
+                                    <textarea style={{ maxHeight: "23vh", marginLeft: "10px" }} className="form-control" aria-label="With textarea" id="direccion" name="direccion" onChange={(e) => setDireccion(e.target.value)} required></textarea>
                                 </div>
                             </div>
                         </div>
@@ -313,87 +470,132 @@ function Admin() {
 
             case 'update':
                 return <div style={{ display: "flex" }} >
-                    <div class="section1">
-                        <input type="number" name="id" id="id" ></input>
-                        <div class="row">
-                            <div class="col">
-                                <div class="input-data">
+                    <div className="section1">
+                        <div className="row">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="alias" name="alias" value={username} onChange={(e) => setUsernamme(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Nombre de usuario</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="nombre" name="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Nombre</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="apellido" name="apellido" value={apellido} onChange={(e) => setApellido(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Apellido</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
-                                    <input type="password" id="clave" name="clave" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                                    <div class="underline"></div>
-                                    <label>Contraseña</label>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="input-data">
-                                    <input type="mail" id="correof" name="correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                                    <div class="underline"></div>
-                                    <label>Correo</label>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="dui" name="dui" value={Dui} onChange={(e) => setDui(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>DUI</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="text" id="telefono" name="telefono" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Numero de telefono</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="input-data">
+                            <div className="col">
+                                <div className="input-data">
                                     <input type="date" name="fecha_nacimiento" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} id="fecha" min="2006-01=01" />
-                                    <div class="underline"></div>
+                                    <div className="underline"></div>
                                     <label>Fecha de nacimiento</label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="section2" style={{ marginRight: "30px" }}>
+                    <div className="section2" style={{ marginRight: "30px" }}>
                         <img src={imageSrc} className="imagen"></img>
-                        <div class="btns">
+                        <div className="btns">
                             <input type="file" name="imageUser" id="file" accept="image/*" onChange={handleImageChange}></input>
                         </div>
-                        <div class="row" style={{ marginTop: "50px" }}>
-                            <div class="col">
-                                <div class="input-group">
+                        <div className="row" style={{ marginTop: "50px" }}>
+                            <div className="col">
+                                <div className="input-group">
                                     <label>Direccion</label>
-                                    <textarea style={{ maxHeight: "23vh", marginLeft: "10px" }} value={direccion} class="form-control" aria-label="With textarea" id="direccion" name="direccion" onChange={(e) => setDireccion(e.target.value)} required></textarea>
+                                    <textarea style={{ maxHeight: "23vh", marginLeft: "10px" }} value={direccion} className="form-control" aria-label="With textarea" id="direccion" name="direccion" onChange={(e) => setDireccion(e.target.value)} required></textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>;
+
             case 'show':
-
-                return;
+                return <div style={{ display: "flex" }} >
+                    <div className="section1">
+                        <div className="row">
+                            <div className="col">
+                                <div className="input-data">
+                                    <label style={{ marginBottom: "15px" }}>Nombre de usuario:</label>
+                                    <input type="text" id="alias" disabled={"true"} name="alias" value={username} required />
+                                    <div className="underline"></div>
+                                </div>
+                            </div>
+                            <div className="col">
+                                <div className="input-data">
+                                    <label style={{ marginBottom: "15px" }}>Nombre:</label>
+                                    <input type="text" id="nombre" disabled={"true"} name="nombre" value={nombre} required />
+                                    <div className="underline"></div>
+                                </div>
+                            </div>
+                            <div className="col">
+                                <div className="input-data">
+                                    <label style={{ marginBottom: "15px" }}>Apellido:</label>
+                                    <input type="text" id="apellido" disabled={"true"} name="apellido" value={apellido} required />
+                                    <div className="underline"></div>
+                                </div>
+                            </div>
+                            <div className="col">
+                                <div className="input-data">
+                                    <label style={{ marginBottom: "15px" }}>DUI:</label>
+                                    <input type="text" id="dui" disabled={"true"} name="dui" value={Dui} required />
+                                    <div className="underline"></div>
+                                </div>
+                            </div>
+                            <div className="col">
+                                <div className="input-data">
+                                    <label style={{ marginBottom: "15px" }}>Numero de telefono:</label>
+                                    <input type="text" id="telefono" disabled={"true"} name="telefono" value={telefono} required />
+                                    <div className="underline"></div>
+                                </div>
+                            </div>
+                            <div className="col">
+                                <div className="input-data">
+                                    <input type="date" name="fecha_nacimiento" disabled={"true"} value={birthDate} id="fecha" min="2006-01=01" />
+                                    <div className="underline"></div>
+                                    <label style={{ marginBottom: "15px" }}>Fecha de nacimiento:</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="section2" style={{ marginRight: "30px" }}>
+                        <div className="btns">
+                            <p>Imagen de usuario</p>
+                        </div>
+                        <img src={imageSrc} className="imagen"></img>
+                        <div className="row" style={{ marginTop: "50px" }}>
+                            <div className="col">
+                                <div className="input-group">
+                                    <label>Direccion</label>
+                                    <textarea style={{ maxHeight: "10vh", marginLeft: "10px" }} disabled={'true'} value={direccion} className="form-control" aria-label="With textarea" id="direccion" name="direccion" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>;
             default:
-
                 return;
         }
     }
@@ -423,10 +625,10 @@ function Admin() {
                     <form id='adminInfo' onSubmit={docId ? handleUpdate : handleInsert}>
                         {handleModal()}
                         <Modal.Footer style={{ marginTop: "1.5rem" }}>
-                            <Button type='submit' variant="secondary">
+                            <Button type='submit' id='save' variant="secondary">
                                 Save Changes
                             </Button>
-                            <Button variant="info" style={{ color: "white" }}>
+                            <Button variant="info" id='clean' style={{ color: "white" }}>
                                 Clean up
                             </Button>
                         </Modal.Footer>
@@ -531,8 +733,8 @@ function Admin() {
                                     <td>{item.uid}</td>
                                     <td style={{ display: "flex", justifyContent: "space-evenly" }}>
                                         <Button variant='outline-warning' title='Editar usuario'><FaFilePen size={"1.3rem"} onClick={() => LoadUpdate(item.id)} /></Button>
-                                        <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} /></Button>
-                                        <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => handleShow('show')} /></Button>
+                                        <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} onClick={() => handleDelete(item.id)} /></Button>
+                                        <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => LoadData(item.id)} /></Button>
                                     </td>
                                 </tr>
                             ))}

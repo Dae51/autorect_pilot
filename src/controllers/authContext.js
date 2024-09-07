@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {!loading ? children : <div>Cargando...</div>}  {/* Mostrar un indicador de carga */}
     </AuthContext.Provider>
   );
 }
@@ -60,7 +60,7 @@ export function ProtectedRoute({ children }) {
     const { currentUser } = useAuth();
   
     if (!currentUser) {
-      return <Navigate to="/index" />;
+      return <Navigate to="/index/" />;
     }
   
     return children;

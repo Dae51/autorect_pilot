@@ -52,27 +52,27 @@ function LoginHandler() {
 
   const location = useLocation();
 
-/*   // Funcion donde se valida la autenticacion del usuario y se guarda en una variable
-  useEffect(() => {
-    // Constante que gestiona la autenticacion del usuario y se guarda en una variable
-    const state = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setuser(firebaseUser);
-        Navigate('/dashboard');
-      } else {
-        setuser(null);
-        Navigate('/index');
+  /*   // Funcion donde se valida la autenticacion del usuario y se guarda en una variable
+    useEffect(() => {
+      // Constante que gestiona la autenticacion del usuario y se guarda en una variable
+      const state = onAuthStateChanged(auth, (firebaseUser) => {
+        if (firebaseUser) {
+          setuser(firebaseUser);
+          Navigate('/dashboard');
+        } else {
+          setuser(null);
+          Navigate('/index');
+        }
       }
-    }
-    );
-    return () => state();
-  }, [Navigate]
-  ); */
+      );
+      return () => state();
+    }, [Navigate]
+    ); */
   // Contenido JSX que se muestra en la aplicacion, se crea la ruta del dashboard y la del index
   return (
     <Routes>
       <Route path="/index" element={
-        <> {checkUsers ? <Login /> : <First />}</>
+        checkUsers ? <Login /> : <First />
       } />
       <Route path="/dashboard" element={
         <ProtectedRoute>
@@ -80,7 +80,7 @@ function LoginHandler() {
         </ProtectedRoute>
 
       } />
-      <Route path="*" element={<Navigate to="/login" />} />
+      <Route path="/index" />
     </Routes>
   );
 }
