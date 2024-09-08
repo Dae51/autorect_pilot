@@ -1,23 +1,33 @@
+// Se importan los estados de react y react
 import { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, updateDoc, addDoc, deleteDoc, getDoc, doc } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+//Se importan los servicios de firebase storage
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// Se importa la conexion con el servidor
 import firebaseApp from '../server/server_config';
 
+// Se importan los componentes de react-bootstrap que utilizaremos para el menu y la interfaz
 import { Button, Dropdown, Modal, Table } from "react-bootstrap"
+// Se importan las notiificaciones 
 import toast from "react-hot-toast";
-import { FaMagnifyingGlass, FaCirclePlus, FaArrowUpRightFromSquare, FaPrint, FaFilePen, FaFileCircleMinus, FaFileCircleQuestion, FaXmark, FaEyeSlash } from "react-icons/fa6"
+// Se importa la iconografia de la libreria react-icons
+import { FaMagnifyingGlass, FaCirclePlus, FaArrowUpRightFromSquare, FaPrint, FaFilePen, FaFileCircleMinus, FaFileCircleQuestion, FaXmark } from "react-icons/fa6"
 
+// Se importa el validator
 import { validateString } from "./validator";
+
+// Se importan las hojas de estilo css
 import "../style/admin/menu.css"
 import "../style/admin/main.css"
 
+// Se inicializan las constantes de los servicios de firebase
 const db = getFirestore(firebaseApp);
 const storage = getStorage();
 const auth = getAuth();
 
+// Funcion principal de la aplicacion
 function Admin() {
 
+    // Se establecen los estilos de los filtros
     const filters = {
         borderRadius: "30px",
         backgroundColor: "white",
@@ -26,6 +36,7 @@ function Admin() {
         marginLeft: "3px"
     }
 
+    // Se establecen las constantes encargadas de manejer estados importantes
     const [data, setData] = useState([]);
     const [numDocs, setNumDocs] = useState(0);
     const [showModal, setShowModal] = useState(false);
@@ -33,7 +44,7 @@ function Admin() {
     const [modalState, setModalState] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
-
+    // Se inicializan las constantes de los datos del usuario
     const [username, setUsernamme] = useState();
     const [nombre, setNombre] = useState();
     const [apellido, setApellido] = useState();
@@ -47,6 +58,8 @@ function Admin() {
     const [Uid, setUid] = useState();
     /*     const [imageURL, setImageURL] = useState();
      */
+
+    // Funcion que se encarga de cargar los usuarios para la tabla de contenido
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -68,6 +81,7 @@ function Admin() {
         fetchData();
     }, [])
 
+    // Funcion que se encarga de mostrar la imagen en el modal
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -80,13 +94,16 @@ function Admin() {
         }
     };
 
+    // Funcion que se encarga de mostarr el modal
     const handleShow = (content) => {
         setModalState(content);
         setShowModal('true');
     }
 
+    // Funcion que se encarga de manejar el evento al momento de insertar usuarios 
     async function handleInsert(e) {
         e.preventDefault();
+        // Se validan los campos y que haya una imagen subida
         if (validateString(username, {
             required: true,
             minLength: 5,
@@ -143,16 +160,16 @@ function Admin() {
             forbiddenChars: null
         }) && imageSrc) {
             try {
-                // Crear usuario en Firebase Authentication
+                // Se crea el usuario en firebase auth
                 const createUser = await createUserWithEmailAndPassword(auth, email, password);
                 const uid = createUser.user.uid;
 
-                // Subir imagen a Firebase Storage
+                // Se sube la imagen de perfil a firebase storage con el uid del usuario
                 const imageStore = ref(storage, `profilePictures/${uid}`);
                 await uploadBytes(imageStore, imageFile);
                 const url = await getDownloadURL(imageStore);
 
-                // Preparar datos del usuario
+                // Se guardan los datos personales del usuario en un objeto anidado
                 let adminData = {
                     alias: username,
                     nombre: nombre,
@@ -164,6 +181,7 @@ function Admin() {
                     profileImage: url
                 };
 
+                // Se guardan las credenciales de firebase auth en otro objeto anidado
                 let adminCredentials = {
                     correo: email,
                     clave: password,
@@ -176,6 +194,7 @@ function Admin() {
                     uid: uid
                 });
 
+                // Se muestra un mensaje de exito y se cierra el modal
                 toast.success('Usuario creado exitosamente');
                 setShowModal(false);
             } catch (error) {
@@ -195,6 +214,7 @@ function Admin() {
     // Funcion que maneja la actualización de datos
     const handleUpdate = async (e) => {
         e.preventDefault();
+        // Se validan los campos del form
         if (validateString(username, {
             required: true,
             minLength: 5,
@@ -238,12 +258,12 @@ function Admin() {
             pattern: null,
             forbiddenChars: null
         })) {
+            // Se inicializan la constante de la imagen de perfil
             const image = document.getElementById('file');
             const file = image.files[0];
 
-
+            // En cacso de haber una imagen subida en el form
             if (file) {
-
                 try {
                     // Subir imagen a Firebase Storage
                     const imageStore = ref(storage, `profilePictures/${Uid}`); // Uid del usuario no autenticado
@@ -254,8 +274,10 @@ function Admin() {
 
                     // Actualizar el estado con la URL obtenida
                     setImageSrc(downloadURL);
+                    // Se muestra un mensaje que se ha subido la imagen
                     toast.success('Imagen actualizada con éxito.');
                 } catch (error) {
+                    // Se muestra  un mensaje de error que no se ha podido subir la imagen
                     toast.error('Ha ocurrido un error al subir la imagen');
                     return;
                 }
@@ -276,6 +298,7 @@ function Admin() {
                         profileImage: imageSrc
                     },
                 });
+                // Se muestra un mensaje de éxito al actualizar el usuario y se cierra el modal
                 toast.success('Usuario actualizado con éxito.');
                 setShowModal(false);
             } catch (error) {
@@ -287,6 +310,7 @@ function Admin() {
         }
     }
 
+    // Funcion para cargar los datos del usuario en el form al abrir seleccionar actualizar un usuario
     function LoadUpdate(id) {
         // Obtener la referencia al documento en la colección "administradores" usando el id
         const docRef = doc(db, "administradores", id);
@@ -310,14 +334,13 @@ function Admin() {
                 setUid(data.uid || "");
                 // Mostrar el modal para actualizar el documento
                 handleShow('update');
-            } else {
-                console.log("¡No existe tal documento!");
             }
         }).catch((error) => {
-            console.error("Error al obtener el documento:", error);
+            toast.error("Usuario no valido");
         });
     }
 
+    // Funcion que se encarga de cargar los datos del usuario al seleccionar consultarlos
     function LoadData(id) {
         // Obtener la referencia al documento en la colección "administradores" usando el id
         const docRef = doc(db, "administradores", id);
@@ -343,52 +366,87 @@ function Admin() {
                 // Mostrar el modal para actualizar el documento
                 handleShow('show');
 
-            } else {
-                console.log("¡No existe tal documento!");
             }
         }).catch((error) => {
-            console.error("Error al obtener el documento:", error);
+            toast.error("Usuario no valido");
         });
     }
 
-    async function handleDelete(id) {
-        try {
-            // Obtener la referencia al documento en la colección "administradores"
-            const docRef = doc(db, "administradores", id);
-
-            // Obtener los datos del documento
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const userUid = data.uid || "";
-                const imagePath = data.adminData?.profileImage || "";
-
-                // Eliminar el usuario de Firebase Authentication
-
-                // Eliminar la imagen de Firebase Storage
-                if (imagePath) {
-                    const imageRef = ref(storage, imagePath);
-                    await deleteObject(imageRef);
-                }
-                else {
-                    toast.error('no se ha podido eliminar la imagen')
-                }
-
-                // Eliminar el documento en Firestore
-                await deleteDoc(docRef);
-                toast.success('Usuario eliminado con éxito.');
-            } else {
-                toast.error('El usuario que se esta tratando de eliminar no existe');
-            }
-        } catch (error) {
-            toast.error("Ha ocurrido un error al eliminar el usuario");
-            console.log(error);
+    // Funcion para limpiar los campos del formulario
+    function clean() {
+        if (docId == null) {
+            try {
+                document.getElementById('alias').value = "";
+                document.getElementById('nombre').value = "";
+                document.getElementById('apellido').value = "";
+                document.getElementById('clave').value = "";
+                document.getElementById('correof').value = "";
+                document.getElementById('dui').value = "";
+                document.getElementById('telefono').value = "";
+                document.getElementById('fecha').value = "";
+                document.getElementById('direccion').value = "";
+                document.getElementById('file').value = "";
+                setImageSrc(null);
+            } catch (error) {
+                toast.error("Ha ocurrido un error al limpiar los campos");
+            };
+        } else {
+            try {
+                document.getElementById('alias').value = "";
+                document.getElementById('nombre').value = "";
+                document.getElementById('apellido').value = "";
+                document.getElementById('dui').value = "";
+                document.getElementById('telefono').value = "";
+                document.getElementById('fecha').value = "";
+                document.getElementById('direccion').value = "";
+                document.getElementById('file').value = "";
+            } catch (error) {
+                toast.error("Ha ocurrido un error al limpiar los campos");
+            };
         }
-    }
 
+    };
+
+    /*   async function handleDelete(id) {
+          try {
+              // Obtener la referencia al documento en la colección "administradores"
+              const docRef = doc(db, "administradores", id);
+  
+              // Obtener los datos del documento
+              const docSnap = await getDoc(docRef);
+  
+              if (docSnap.exists()) {
+                  const data = docSnap.data();
+                  const userUid = data.uid || "";
+                  const imagePath = data.adminData?.profileImage || "";
+  
+                  // Eliminar el usuario de Firebase Authentication
+  
+                  // Eliminar la imagen de Firebase Storage
+                  if (imagePath) {
+                      const imageRef = ref(storage, imagePath);
+                      await deleteObject(imageRef);
+                  }
+                  else {
+                      toast.error('no se ha podido eliminar la imagen')
+                  }
+  
+                  // Eliminar el documento en Firestore
+                  await deleteDoc(docRef);
+                  toast.success('Usuario eliminado con éxito.');
+              } else {
+                  toast.error('El usuario que se esta tratando de eliminar no existe');
+              }
+          } catch (error) {
+              toast.error("Ha ocurrido un error al eliminar el usuario");
+              console.log(error);
+          }
+      } */
+
+    // Funcion que se encarga de cargar el contenido del modal dependiendo del evento 
     const handleModal = () => {
         switch (modalState) {
+            // Se carga el contenido del caso "insert"
             case 'insert':
                 return <div style={{ display: "flex" }} >
                     <div className="section1">
@@ -467,7 +525,7 @@ function Admin() {
                     </div>
                 </div>;
 
-
+            // Se carga el contenido del caso "update"
             case 'update':
                 return <div style={{ display: "flex" }} >
                     <div className="section1">
@@ -532,6 +590,7 @@ function Admin() {
                     </div>
                 </div>;
 
+            // Se carga el contenido del caso "delete"
             case 'show':
                 return <div style={{ display: "flex" }} >
                     <div className="section1">
@@ -600,6 +659,7 @@ function Admin() {
         }
     }
 
+    // Se muestra el contenido del CRUD administradores
     return (
         <div>
             <div className="topmain" style={{ display: "flex", justifyContent: "space-between" }}>
@@ -628,7 +688,7 @@ function Admin() {
                             <Button type='submit' id='save' variant="secondary">
                                 Save Changes
                             </Button>
-                            <Button variant="info" id='clean' style={{ color: "white" }}>
+                            <Button onClick={() => clean()} variant="info" id='clean' style={{ color: "white" }}>
                                 Clean up
                             </Button>
                         </Modal.Footer>
@@ -724,6 +784,7 @@ function Admin() {
                             </tr>
                         </thead>
                         <tbody id="tbody">
+                            {/* Se carga la tabla */}
                             {data.map((item) => (
                                 <tr key={item.id}>
                                     <td>{item.adminCredentials?.correo}</td>
@@ -733,8 +794,8 @@ function Admin() {
                                     <td>{item.uid}</td>
                                     <td style={{ display: "flex", justifyContent: "space-evenly" }}>
                                         <Button variant='outline-warning' title='Editar usuario'><FaFilePen size={"1.3rem"} onClick={() => LoadUpdate(item.id)} /></Button>
-                                        <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} onClick={() => handleDelete(item.id)} /></Button>
-                                        <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => LoadData(item.id)} /></Button>
+                                        {/*                                         <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} onClick={() => handleDelete(item.id)} /></Button>
+ */}                                        <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => LoadData(item.id)} /></Button>
                                     </td>
                                 </tr>
                             ))}
