@@ -1,5 +1,9 @@
 // Se importan los estados de react y react
 import { useState, useEffect } from 'react';
+// Se importan los servicios a usar de firestore
+import { getFirestore, collection, getDocs, updateDoc, addDoc, getDoc, doc } from "firebase/firestore";
+// Se importan los servicios de firebase auth
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 //Se importan los servicios de firebase storage
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 // Se importa la conexion con el servidor
