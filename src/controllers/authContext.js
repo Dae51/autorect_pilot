@@ -1,15 +1,22 @@
+// Se importan las utilidades de react a utilizar
 import React, { createContext, useContext, useState, useEffect } from 'react';
+// Se importan los servicios de firebase auth a utilizar
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+// Se importan las utilidades de react router dom
 import { useNavigate, Navigate } from 'react-router-dom';
+// Se importa la conexion con la base de datos
 import firebaseApp from '../server/server_config';
 
+// Se inicializan las constantes para interactuar con la base de datos
 const AuthContext = createContext();
 const auth = getAuth(firebaseApp);
 
+// Funcion que se encarga de manejar todos los servicios de autenticacin disponibles
 export function useAuth() {
   return useContext(AuthContext);
 }
 
+// Funcion child de useAuth
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +40,7 @@ export function AuthProvider({ children }) {
   // Función para cerrar sesión
   const logout = async () => {
     await signOut(auth);
-    navigate('/index');  // Redirige al inicio tras cerrar sesión
+    navigate('/');  // Redirige al inicio tras cerrar sesión
   };
 
   // Función para crear un nuevo usuario
@@ -56,11 +63,12 @@ export function AuthProvider({ children }) {
   );
 }
 
+// Función para manejar las rutas protegidas
 export function ProtectedRoute({ children }) {
     const { currentUser } = useAuth();
   
     if (!currentUser) {
-      return <Navigate to="/index/" />;
+      return <Navigate to="/" />;
     }
   
     return children;

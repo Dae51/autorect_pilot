@@ -1,20 +1,21 @@
 // Se importa el estado incial de react
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {useAuth} from "./authContext.js"
 
 // Se importa el modulo que carga la conexion a firebase
 import firebaseApp from "../server/server_config";
-// Se importa el metodo de autenticacion de firebase
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
+// Sr importan las notificaciones de la libreria react-hot-toast
 import toast from 'react-hot-toast';
-
+// Se importan los componentes de react bootstrap
 import Button from "react-bootstrap/Button";
 
+// Se importan los estilos css del login
 import style from '../style/admin/login.module.css';
 import logo from '../images/logo_login.png';
 
+// Se crean las constantes que guardan estilos css del login
 export const buttonStyle = {
     backgroundColor: '#822727',
     color: 'white',
@@ -40,15 +41,13 @@ export const logoStyle = {
     marginBottom: '3rem'
 };
 
-// Se crea la constante donde se guarda la autenticacion del usuario
-const auth = getAuth(firebaseApp);
-
 
 // Se carga el modulp del login 
 function Login() {
     // Constante navigate para navegar entre paginas
     const navigate = useNavigate();
 
+    // Constante para interactuar con el auth context
     const {login} = useAuth();
 
     // Se declaran los estados para el email y la contraseña del usuario

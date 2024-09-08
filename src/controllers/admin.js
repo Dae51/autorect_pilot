@@ -14,7 +14,7 @@ import { Button, Dropdown, Modal, Table } from "react-bootstrap"
 // Se importan las notiificaciones 
 import toast from "react-hot-toast";
 // Se importa la iconografia de la libreria react-icons
-import { FaMagnifyingGlass, FaCirclePlus, FaArrowUpRightFromSquare, FaPrint, FaFilePen, FaFileCircleMinus, FaFileCircleQuestion, FaXmark } from "react-icons/fa6"
+import { FaMagnifyingGlass, FaCirclePlus, FaArrowUpRightFromSquare, FaPrint, FaFilePen, FaFileCircleQuestion, FaXmark } from "react-icons/fa6"
 
 // Se importa el validator
 import { validateString } from "./validator";
