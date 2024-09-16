@@ -10,14 +10,22 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 // Se importa el el servicio para agregar documentos a una coleccion en firebase
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 
+// Se importan los componentes de react-bootstrap que utilizaremos para el menu y la interfaz
 import style from '../style/admin/login.module.css';
 
+// Se importan los componentes de react-bootstrap
 import { Button } from "react-bootstrap";
+
+//Se importan los estilos ya definidos en el login
 import { buttonStyle, logoStyle, title } from '../controllers/login'
+
+// Se importan las notificaciones toast desde la libreria react-hot-toast
 import toast from "react-hot-toast";
 
+// Se importa el validator
 import { validateString } from "./validator";
 
+// Se importa la imagen del logo
 import logo from '../images/logo_login.png';
 
 // Se inicializa la constante de firestore

@@ -20,6 +20,8 @@ import Dashboard from "./main.js";
 
 import Admin from "./admin.js";
 
+import Category from "./categories.js" ;
+
 //Se importa el logo de la aplicacion 
 import logo from "../images/logo_login.png";
 
@@ -82,6 +84,8 @@ function Account() {
                 return <Admin />;
             case 'usuarios':
                 return <h1>Usuarios</h1>;
+            case 'category':
+                return <Category />;
             default:
                 return <Dashboard />;
         }
@@ -148,6 +152,7 @@ function Account() {
                                     <Dropdown.Menu style={dropdownStyle}>
                                         <Dropdown.Item style={dropdownItem}>Marcas</Dropdown.Item>
                                         <Dropdown.Item style={dropdownItem}>Modelos</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler("category")}>Categories</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </Dropdown>
                                 <Dropdown>
