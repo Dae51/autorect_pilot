@@ -135,6 +135,7 @@ function Category() {
                 toast.success('Categoria actualizado con éxito.');
                 setShowModal(false);
                 fetchData();
+                setDocId(null);
             } catch (error) {
                 toast.error('Error al actualizar la categoria.');
             }
@@ -268,7 +269,7 @@ function Category() {
             </div>
             <Modal show={showModal} onHide={() => setShowModal('false')} backdrop="static" size='lg'>
                 <Modal.Header style={{ display: "flex", justifyContent: "space-between" }}>
-                    <Modal.Title>Manage admin's</Modal.Title>
+                    <Modal.Title>Manage categories</Modal.Title>
                     <Button onClick={() => setShowModal(false)} style={{ backgroundColor: "white", color: "#636363", border: "none" }}>
                         <FaXmark size={"1.3rem"} />
                     </Button>

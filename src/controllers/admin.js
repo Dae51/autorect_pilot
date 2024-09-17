@@ -65,25 +65,27 @@ function Admin() {
 
     // Funcion que se encarga de cargar los usuarios para la tabla de contenido
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(db, "administradores"));
-                const docsData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-                setData(docsData);
-                setNumDocs(querySnapshot.size);
-                if (numDocs < 10) {
-                    setNumDocs(`0${querySnapshot.size}`);
-                } else {
-                    setNumDocs(querySnapshot.size);
-                };
-            } catch (error) {
-                toast.error("No se han podido cargar los datos de la tabla:", error);
-            };
-        };
-
-
         fetchData();
     }, [])
+
+    //Funcion para cargar el contenido de la tabla
+    const fetchData = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, "administradores"));
+            const docsData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            setData(docsData);
+            setNumDocs(querySnapshot.size);
+            if (numDocs < 10) {
+                setNumDocs(`0${querySnapshot.size}`);
+            } else {
+                setNumDocs(querySnapshot.size);
+            };
+        } catch (error) {
+            toast.error("No se han podido cargar los datos de la tabla:", error);
+        };
+    };
+
+
 
     // Funcion que se encarga de mostrar la imagen en el modal
     const handleImageChange = (e) => {
@@ -201,6 +203,7 @@ function Admin() {
                 // Se muestra un mensaje de exito y se cierra el modal
                 toast.success('Usuario creado exitosamente');
                 setShowModal(false);
+                fetchData();
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') {
                     toast.error('El correo ya está en uso.');
@@ -305,6 +308,7 @@ function Admin() {
                 // Se muestra un mensaje de éxito al actualizar el usuario y se cierra el modal
                 toast.success('Usuario actualizado con éxito.');
                 setShowModal(false);
+                fetchData(); 
             } catch (error) {
                 toast.error('Error al actualizar el usuario.');
             }
