@@ -94,7 +94,6 @@ function Account() {
     // Funcion encargada de manejar el cambio de estado del sidebar
     const ToggleNav = () => {
         setnavHidden(!navHidden);
-        console.log(navHidden);
     }
 
     // Se carga el contenido del dashboard
