@@ -1,7 +1,7 @@
 // Se importa el estado incial de react
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {useAuth} from "./authContext.js"
+import {useAuth} from "./components/authContext.js"
 
 // Se importa el modulo que carga la conexion a firebase
 import firebaseApp from "../server/server_config";
@@ -26,6 +26,7 @@ export const buttonStyle = {
     marginLeft: '5rem',
     border: "transparent"
 };
+
 export const title = {
     color: 'white',
     fontSize: '46pt',
@@ -41,7 +42,6 @@ export const logoStyle = {
     marginBottom: '3rem'
 };
 
-
 // Se carga el modulp del login 
 function Login() {
     // Constante navigate para navegar entre paginas
@@ -49,6 +49,7 @@ function Login() {
 
     // Constante para interactuar con el auth context
     const {login} = useAuth();
+
 
     // Se declaran los estados para el email y la contraseña del usuario
     const [mail, setmail] = useState('');
@@ -111,7 +112,9 @@ function Login() {
                     </div>
                     <div className={style.endlogin}>
                         <div className={style.forget} style={{ color: '#A3A3A3', marginTop: '0.75rem', marginLeft: '14rem' }}>
-                            <a>Forgot password?</a>
+                            <a style={{ color: '#A3A3A3', cursor: 'pointer' }} onClick={() => navigate('/reset')}>
+                                Forgot your password?
+                            </a>
                         </div>
                         <div className={style.buttons}>
                             <Button id="btnlogin" type="submit" size="xxl" style={buttonStyle}>Login</Button>

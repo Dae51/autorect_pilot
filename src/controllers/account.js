@@ -1,9 +1,9 @@
 // Se importa el useState de react
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // Se importa firebase
 import firebaseApp from "../server/server_config";
 // Se importan los modulos de autenticacion necesarios de firebase autentication
-import {useAuth} from "./authContext.js"
+import { useAuth } from "./components/authContext.js"
 //Se importan la iconografia a utilizar desde react-icons
 import { FaHouseChimney, FaCircleUser, FaUserGroup, FaBookmark, FaClipboardUser, FaCarBattery, FaCartFlatbed, FaArrowRightFromBracket, FaAngleRight, FaAngleLeft } from "react-icons/fa6";
 //Se importan los objetos a utilizar desde la libreria de bootstrap
@@ -20,7 +20,27 @@ import Dashboard from "./main.js";
 
 import Admin from "./admin.js";
 
-import Category from "./categories.js" ;
+import Category from "./categories.js";
+
+import Client from "./clientes.js";
+
+import Managers from "./managers.js";
+
+import Brands from "./brands.js";
+
+import Models from "./models.js";
+
+import User from "./users.js";
+
+import Review from "./reviews.js";
+
+import Cart from "./cart.js";
+
+import Saved from "./savedProducts.js";
+
+import Product from "./product.js";
+
+import Orders from "./orders.js";
 
 //Se importa el logo de la aplicacion 
 import logo from "../images/logo_login.png";
@@ -28,8 +48,27 @@ import logo from "../images/logo_login.png";
 
 // Funcion que maneja todo el contenido principal
 function Account() {
-    const {logout} = useAuth();
 
+    const { logout } = useAuth();
+
+    const { currentUser } = useAuth();
+
+
+    useEffect(() => {
+        if (currentUser.level == "administrador") {
+            setHide(false);
+            return;
+        }
+        else if (currentUser.level == "cliente") {
+            setHide(true);
+            return;
+        }
+        else {
+            toast.error('No existe ninguna sesion.');
+            logout();
+            return;
+        }
+    }, [currentUser])
 
     //Se crea la variable de estado cuando el usuario desplaza el mouse por encima de un objeto
     const [Hovered, setHovered] = useState(null);
@@ -37,6 +76,8 @@ function Account() {
     const [navHidden, setnavHidden] = useState(null);
     // Se crea la variable que se encarga de mostrar el contenido seleccionado por el usuario
     const [contentHandler, setContentHandler] = useState(null);
+
+    const [hide, setHide] = useState(null);
 
     //Se crean las variables de estilos a utilizar
     const navItem = {
@@ -74,18 +115,91 @@ function Account() {
         fontSize: "1rem"
     }
 
-
+    /*   const handleAcces = () => {
+          switch(currentUser.level) {
+              case 'cliente':
+  
+              
+          }
+      } 
+   */
     // Funcion encargada de mostrar el contenido de la pagina
     const handleContentChange = (e) => {
         switch (contentHandler) {
-            case 'dashboard': 
+            case 'dashboard':
                 return <Dashboard />;
             case 'administradores':
-                return <Admin />;
-            case 'usuarios':
-                return <h1>Usuarios</h1>;
+                if (currentUser.level == "administrador") {
+                    return <Admin />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
             case 'category':
-                return <Category />;
+                if (currentUser.level == "administrador") {
+                    return <Category />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'client':
+                if (currentUser.level == "administrador") {
+                    return <Client />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'manager':
+                return <Managers />;
+            case 'brand':
+                if (currentUser.level == "administrador") {
+                    return <Brands />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'model':
+                if (currentUser.level == "administrador") {
+                    return <Models />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'user':
+                if (currentUser.level == "administrador") {
+                    return <User />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'review':
+                return <Review />;
+            case 'cart':
+                if (currentUser.level == "administrador") {
+                    return <Cart />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'saved':
+                if (currentUser.level == "administrador") {
+                    return <Saved />;
+                } else {
+                    toast.error("No tienes permisos para acceder a esta sección");
+                    setContentHandler('dashboard');
+                    return null;
+                }
+            case 'product':
+                return <Product />;
+            case 'orders':
+                return <Orders />;
             default:
                 return <Dashboard />;
         }
@@ -99,8 +213,8 @@ function Account() {
     // Se carga el contenido del dashboard
     return (
         <div style={{ backgroundColor: "white" }}>
-            <div style={{display: "block"}}>
-    {/* Se carga el menu del sistema (sidebar) */}
+            <div style={{ display: "block" }}>
+                {/* Se carga el menu del sistema (sidebar) */}
                 <aside>
                     <div style={nav}>
                         <ul className="nav flex-column">
@@ -109,7 +223,7 @@ function Account() {
                                     <img src={logo} alt="" />
                                 </div>
                                 <div className="btn">
-                                    <Button onClick={ToggleNav} style={{ padding: "7px", borderRadius: "30px" }}>{navHidden ? <FaAngleRight/> : <FaAngleLeft/>}</Button>
+                                    <Button onClick={ToggleNav} style={{ padding: "7px", borderRadius: "30px" }}>{navHidden ? <FaAngleRight /> : <FaAngleLeft />}</Button>
                                 </div>
                             </div>
 
@@ -119,7 +233,7 @@ function Account() {
                                         <FaHouseChimney size={"1.5rem"} />
                                     </div>
                                 </Button>
-                                <Button title="Administradores" type="button" className="btn" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Users" onClick={() => setContentHandler('administradores')} onMouseOver={() => setHovered(2)} onMouseLeave={() => setHovered(null)} style={(Hovered === 2) ? navItemHover : navItem} >
+                                <Button title="Administradores" type="button" className="btn" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Users" onClick={() => setContentHandler('administradores')} onMouseOver={() => setHovered(2)} onMouseLeave={() => setHovered(null)} style={hide ? { display: "none" } : (Hovered === 2) ? navItemHover : navItem} >
                                     <div style={{ marginTop: "5px", marginBottom: "5px", justifyContent: "center" }}>
                                         <FaClipboardUser size={"1.75rem"} />
                                     </div>
@@ -129,41 +243,37 @@ function Account() {
                                         <FaCircleUser size={"1.5rem"} style={{ marginTop: "3px", marginBottom: "3px" }} />
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu style={dropdownStyle}>
-                                        <Dropdown.Item style={dropdownItem}>Clientes</Dropdown.Item>
-                                        <Dropdown.Item style={dropdownItem}>Encargados</Dropdown.Item>
-                                        <Dropdown.Item style={dropdownItem}>Valoraciones</Dropdown.Item>
+                                        <Dropdown.Item style={hide ? { display: "none" } : dropdownItem} onClick={() => setContentHandler('client')}>Clientes</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('manager')}>Encargados</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('review')}>Valoraciones</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </Dropdown>
-                                <Dropdown>
+                                <Dropdown style={hide ? { display: "none" } : {}}>
                                     <Dropdown.Toggle title="Usuarios" onMouseOver={() => setHovered(4)} onMouseLeave={() => setHovered(null)} style={(Hovered === 4) ? navItemHover : navItem}>
                                         <FaUserGroup size={"1.5rem"} style={{ marginTop: "3px", marginBottom: "3px" }} />
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu style={dropdownStyle}>
-                                        <Dropdown.Item style={dropdownItem}>Usuarios</Dropdown.Item>
-                                        <Dropdown.Item style={dropdownItem}>Carritos</Dropdown.Item>
-                                        <Dropdown.Item style={dropdownItem}>Productos guardados</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('user')}>Usuarios</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('cart')}>Carritos</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('saved')}>Productos guardados</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </Dropdown>
-                                <Dropdown>
+                                <Dropdown style={hide ? { display: "none" } : dropdownItem}>
                                     <Dropdown.Toggle title="Marcas" onMouseOver={() => setHovered(5)} onMouseLeave={() => setHovered(null)} style={(Hovered === 5) ? navItemHover : navItem}>
                                         <FaBookmark size={"1.5rem"} style={{ marginTop: "3px", marginBottom: "3px" }} />
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu style={dropdownStyle}>
-                                        <Dropdown.Item style={dropdownItem}>Marcas</Dropdown.Item>
-                                        <Dropdown.Item style={dropdownItem}>Modelos</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('brand')}>Marcas</Dropdown.Item>
+                                        <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler('model')}>Modelos</Dropdown.Item>
                                         <Dropdown.Item style={dropdownItem} onClick={() => setContentHandler("category")}>Categories</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </Dropdown>
-                                <Dropdown>
-                                    <Dropdown.Toggle title="Pedidos" onMouseOver={() => setHovered(6)} onMouseLeave={() => setHovered(null)} style={(Hovered === 6) ? navItemHover : navItem}>
-                                        <FaCartFlatbed size={"1.5rem"} style={{ marginTop: "3px", marginBottom: "3px" }} />
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu style={dropdownStyle}>
-                                        <Dropdown.Item style={dropdownItem}>Pedidos</Dropdown.Item>
-                                        <Dropdown.Item style={dropdownItem}>Detalle pedidos</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                                <Button title="Productos" type="button" className="btn" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Products" onMouseOver={() => setHovered(7)} onMouseLeave={() => setHovered(null)} style={(Hovered === 7) ? navItemHover : navItem} >
+                                <Button title="pedidos" type="button" className="btn" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Users" onClick={() => setContentHandler('orders')} onMouseOver={() => setHovered(6)} onMouseLeave={() => setHovered(null)} style={hide ? { display: "none" } : (Hovered === 6) ? navItemHover : navItem} >
+                                    <div style={{ marginTop: "5px", marginBottom: "5px", justifyContent: "center" }}>
+                                        <FaCartFlatbed size={"1.75rem"} />
+                                    </div>
+                                </Button>
+                                <Button title="Productos" onClick={() => setContentHandler('product')} type="button" className="btn" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Products" onMouseOver={() => setHovered(7)} onMouseLeave={() => setHovered(null)} style={(Hovered === 7) ? navItemHover : navItem} >
                                     <div style={{ marginTop: "5px", marginBottom: "5px", justifyContent: "center" }}>
                                         <FaCarBattery size={"1.5rem"} />
                                     </div>
@@ -179,8 +289,8 @@ function Account() {
                         </ul>
                     </div>
                 </aside>
-    {/*  Se carga el contenido de la pagina dependiendo de la funcion handleContentChange  */}               
-                 <main style={{width: "auto", height: "100vh", marginLeft: "9%", overflowY: "scroll", overflowX:"hidden"}}>
+                {/*  Se carga el contenido de la pagina dependiendo de la funcion handleContentChange  */}
+                <main style={{ width: "auto", height: "100vh", marginLeft: "9%", overflowY: "scroll", overflowX: "hidden" }}>
                     {handleContentChange()}
                 </main>
             </div>

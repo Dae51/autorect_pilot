@@ -6,7 +6,7 @@ import { getFirestore, collection, getDocs, updateDoc, addDoc, getDoc, doc, dele
 import firebaseApp from '../server/server_config';
 
 // Se importan los componentes de react-bootstrap que utilizaremos para el menu y la interfaz
-import { Button, Dropdown, Modal, Table, Alert, Form } from "react-bootstrap"
+import { Button, Dropdown, Modal, Table, Alert } from "react-bootstrap"
 // Se importan las notiificaciones 
 import toast from "react-hot-toast";
 // Se importa la iconografia de la libreria react-icons
@@ -37,7 +37,6 @@ function Category() {
 
     // Se establecen las constantes encargadas de manejer estados importantes
     const [data, setData] = useState([]);
-    const [hiddenDocs, setHiddenDocs] = useState(0);
     const [numDocs, setNumDocs] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [alert, setAlert] = useState(false);
@@ -333,7 +332,7 @@ function Category() {
         <div>
             <div className="topmain" style={{ display: "flex", justifyContent: "space-between" }}>
                 <div className="text">
-                    <p>Model's categories</p>
+                    <p>CAR | CATEGORIES</p>
                 </div>
                 <div className="buttonstop">
                     <Button className="stop" data-tooltip="btnprueba" style={filters}>Export  <FaArrowUpRightFromSquare style={{ marginLeft: "3px", marginRight: "3px", marginBottom: "3px" }} /></Button>
@@ -367,7 +366,7 @@ function Category() {
             <div className="searchsection">
                 <form className="search" id="form-search" method="post">
                     <button type="submit" className="button-search" style={{ marginLeft: "20px" }}><FaMagnifyingGlass size={"1.5rem"} style={{ marginTop: "10px" }} /></button>
-                    <input type="text" name="search" placeholder="Category..." style={{ marginLeft: "23px" }} value={search} onChange={(e) => { setSearch(e.target.value); fetchData() }} />
+                    <input type="text" name="search" placeholder="Search by category" style={{ marginLeft: "23px" }} value={search} onChange={(e) => { setSearch(e.target.value); fetchData() }} />
                 </form>
                 <div className="buttonsearch">
                     <input type="date" className="btnfilter sm-disable" />

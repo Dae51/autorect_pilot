@@ -8,7 +8,7 @@ import React from 'react';
 import { useNavigate, BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 // Se importan los componentes protegidos y el contexto de autenticacion
-import { ProtectedRoute, AuthProvider } from './controllers/authContext.js';
+import { ProtectedRoute, AuthProvider } from './controllers/components/authContext.js';
 
 // Se importa el modulo Toaster de la libreria react-hot-toast donde se cargan las notificaciones
 import { Toaster } from 'react-hot-toast';
@@ -19,6 +19,10 @@ import First from './controllers/first_user.js';
 import Login from './controllers/login.js';
 // Se importa el componente del contenido que se muestra en la aplicacion
 import Account from "./controllers/account.js";
+
+import Settings from "./controllers/settings.js";
+
+import Reset from './controllers/reset.js';
 
 // Se importa el modulo de bootstrap
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
@@ -58,7 +62,14 @@ function LoginHandler() {
         </ProtectedRoute>
 
       } />
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/reset" element={ 
+          <Reset />
+      } />
     </Routes>
   );
 }

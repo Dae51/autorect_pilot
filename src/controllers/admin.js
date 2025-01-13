@@ -1,7 +1,7 @@
 // Se importan los estados de react y react
 import { useState, useEffect } from 'react';
 // Se importan los servicios a usar de firestore
-import { getFirestore, collection, getDocs, updateDoc, addDoc, getDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, updateDoc, addDoc, getDoc, doc, where, query } from "firebase/firestore";
 // Se importan los servicios de firebase auth
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 //Se importan los servicios de firebase storage
@@ -14,7 +14,7 @@ import { Button, Dropdown, Modal, Table } from "react-bootstrap"
 // Se importan las notiificaciones 
 import toast from "react-hot-toast";
 // Se importa la iconografia de la libreria react-icons
-import { FaMagnifyingGlass, FaCirclePlus, FaArrowUpRightFromSquare, FaPrint, FaFilePen, FaFileCircleQuestion, FaEyeSlash, FaXmark } from "react-icons/fa6"
+import { FaMagnifyingGlass, FaCirclePlus, FaFilePdf ,FaFilePen, FaFileCircleQuestion, FaEyeSlash, FaXmark } from "react-icons/fa6"
 
 // Se importa el validator
 import { validateString } from "./validator";
@@ -22,6 +22,7 @@ import { validateString } from "./validator";
 // Se importan las hojas de estilo css
 import "../style/admin/menu.css"
 import "../style/admin/main.css"
+import { useAuth } from './components/authContext';
 
 // Se inicializan las constantes de los servicios de firebase
 const db = getFirestore(firebaseApp);
@@ -47,6 +48,9 @@ function Admin() {
     const [imageSrc, setImageSrc] = useState(null);
     const [modalState, setModalState] = useState(null);
     const [imageFile, setImageFile] = useState(null);
+    const [search, setSearch] = useState();
+    const [TableDefaults, setTableDefaults] = useState(false);
+
 
     // Se inicializan las constantes de los datos del usuario
     const [username, setUsernamme] = useState();
@@ -63,21 +67,27 @@ function Admin() {
     /*     const [imageURL, setImageURL] = useState();
      */
 
+
     // Funcion que se encarga de cargar los usuarios para la tabla de contenido
     useEffect(() => {
         fetchData();
-    }, [])
+    }, [search])
 
     //Funcion para cargar el contenido de la tabla
     const fetchData = async () => {
         try {
-            const querySnapshot = await getDocs(collection(db, "administradores"));
+            setTableDefaults(false)
+            const recordsRef = collection(db, "administradores");
+            const q = (search && search.trim() !== "")
+                ? query(recordsRef, where("adminCredentials.correo", "==", search))
+                : query(recordsRef);
+            const querySnapshot = await getDocs(q);
             const docsData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setData(docsData);
             setNumDocs(querySnapshot.size);
+            setData(docsData);
             if (numDocs < 10) {
                 setNumDocs(`0${querySnapshot.size}`);
-            } else {
+            } else if (numDocs >= 10) {
                 setNumDocs(querySnapshot.size);
             };
         } catch (error) {
@@ -308,7 +318,7 @@ function Admin() {
                 // Se muestra un mensaje de éxito al actualizar el usuario y se cierra el modal
                 toast.success('Usuario actualizado con éxito.');
                 setShowModal(false);
-                fetchData(); 
+                fetchData();
             } catch (error) {
                 toast.error('Error al actualizar el usuario.');
             }
@@ -675,8 +685,7 @@ function Admin() {
                     <p>USERS | ADMINS</p>
                 </div>
                 <div className="buttonstop">
-                    <Button className="stop" data-tooltip="btnprueba" style={filters}>Export  <FaArrowUpRightFromSquare style={{ marginLeft: "3px", marginRight: "3px", marginBottom: "3px" }} /></Button>
-                    <Button className="stop" style={filters}>Print <FaPrint style={{ marginRight: "3px", marginLeft: "3px", marginBottom: "3px" }} /></Button>
+                    <Button className="stop" style={filters}>Report <FaFilePdf style={{ marginRight: "3px", marginLeft: "3px", marginBottom: "3px" }} /></Button>
                     <Button type="button" id="red" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => handleShow('insert')} style={{ width: "auto", marginLeft: "3px" }}>
                         <FaCirclePlus style={{ marginRight: "5px", marginBottom: "3px" }} />New User
                     </Button>
@@ -706,7 +715,7 @@ function Admin() {
             <div className="searchsection">
                 <form className="search" id="form-search" method="post">
                     <button type="submit" className="button-search" style={{ marginLeft: "20px" }}><FaMagnifyingGlass size={"1.5rem"} style={{ marginTop: "10px" }} /></button>
-                    <input type="text" name="search" placeholder="Username..." style={{ marginLeft: "23px" }} />
+                    <input type="text" name="search" placeholder="Search by username" style={{ marginLeft: "23px" }} value={search} onChange={(e) => { setSearch(e.target.value); fetchData() }} />
                 </form>
                 <div className="buttonsearch">
                     <input type="date" className="btnfilter sm-disable" />
@@ -744,7 +753,7 @@ function Admin() {
                 </div>
             </div>
             <div className="filtertable">
-                <button className="active">All users <span>{numDocs}</span></button>
+                <button className="active">Active users <span>{numDocs}</span></button>
                 <button>Disabled users <span>03</span></button>
             </div>
             <div className="datatable">
@@ -787,7 +796,6 @@ function Admin() {
                             <tr>
                                 <th scope="col">Mail</th>
                                 <th scope="col">Password</th>
-                                <th scope="col">UID</th>
                                 <th scope="col">Actions</th>
                             </tr>
                         </thead>
@@ -799,11 +807,10 @@ function Admin() {
                                     <td>
                                         {'•'.repeat(item.adminCredentials?.clave.length)}
                                     </td>
-                                    <td>{item.uid}</td>
                                     <td style={{ display: "flex", justifyContent: "space-evenly" }}>
                                         <Button variant='outline-warning' title='Editar usuario'><FaFilePen size={"1.3rem"} onClick={() => LoadUpdate(item.id)} /></Button>
-                                        {/*                                         <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} onClick={() => handleDelete(item.id)} /></Button>
- */}                                        <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => LoadData(item.id)} /></Button>
+                                        {/*                                         <Button variant='outline-danger' title='Eliminar usuario'><FaFileCircleMinus size={"1.3rem"} onClick={() => handleDelete(item.id)} /></Button> */}
+                                        <Button variant='outline-success' title='Consultar datos'><FaFileCircleQuestion size={"1.3rem"} onClick={() => LoadData(item.id)} /></Button>
                                     </td>
                                 </tr>
                             ))}
